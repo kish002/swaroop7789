@@ -1,0 +1,20 @@
+import boto3
+
+s3 = boto3.client('s3')
+
+prefix = '__cb__'
+
+# List all S3 buckets and their regions
+buckets = s3.list_buckets()['Buckets']
+for bucket in buckets:
+    bucket_name = bucket['Name']
+    bucket_region = s3.get_bucket_location(Bucket=bucket_name)['LocationConstraint']
+    if bucket_region is None:
+        bucket_region = 'us-east-1'
+    print(f"Bucket name: {bucket_name} Region: {bucket_region}")
+
+    # Find files with the prefix "__cb__"
+    s3_resource = boto3.resource('s3', region_name=bucket_region)
+    bucket = s3_resource.Bucket(bucket_name)
+    for obj in bucket.objects.filter(Prefix=prefix):
+        print(f"File name: {obj.key}")
